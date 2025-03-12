@@ -10,7 +10,18 @@ import UIKit
 class ViewController: UIViewController, SecondViewControllerDelegate {
     
     // 컴포넌트 만들 때 많이 쓰는 방법
-
+    // lazy var: 초기화를 늦게 하기 위해 사용하는 키워드
+    lazy var myLabel: UILabel = {
+        print("myLabel 생성")
+        let label = UILabel()
+        label.text = "입력 결과를 출력합니다."
+        label.textAlignment = .center
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 24)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
   override func viewDidLoad() {
     super.viewDidLoad()
     setupUI()
@@ -49,10 +60,18 @@ class ViewController: UIViewController, SecondViewControllerDelegate {
         button.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20),
         button.heightAnchor.constraint(equalToConstant: 40),
       ])
+      
+      self.view.addSubview(myLabel)
+      NSLayoutConstraint.activate([
+        myLabel.topAnchor.constraint(equalTo: button.topAnchor, constant: 200),
+        myLabel.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 20),
+        myLabel.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20),
+        myLabel.heightAnchor.constraint(equalToConstant: 40),
+      ])
   }
     
     func didDismissSecondViewController(message: String) {
-        print("SecondViewController에서 전달받은 메시지: \(message)")
+        myLabel.text = message
     }
     
     @objc func goSecond() {
