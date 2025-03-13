@@ -59,8 +59,13 @@ class ViewController: UIViewController {
     // MARK: - 버튼생성
     func setupButton(){
         let button = UIButton(type: .system)
-         button.setTitle("Press Me", for: .normal)
-         button.titleLabel?.font = .systemFont(ofSize: 24)
+//         button.setTitle("Press Me", for: .normal)
+//         button.titleLabel?.font = .systemFont(ofSize: 24)
+        
+        var configuration = UIButton.Configuration.filled()
+         configuration.title = "Press Me"
+         button.configuration = configuration
+        
          button.translatesAutoresizingMaskIntoConstraints = false
          view.addSubview(button)
      
