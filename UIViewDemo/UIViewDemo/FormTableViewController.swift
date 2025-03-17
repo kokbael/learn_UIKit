@@ -70,7 +70,7 @@ class FormTableViewController: UITableViewController {
         return 50
     }
     
-    // MARK: - Table view data source
+    // MARK: - objc selectors
     @objc func toggleChanged(_ sender: UISwitch) {
         flag = sender.isOn
         button.isEnabled = flag
