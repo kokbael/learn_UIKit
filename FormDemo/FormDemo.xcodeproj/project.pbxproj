@@ -48,16 +48,6 @@
 			path = FormDemo;
 			sourceTree = "<group>";
 		};
-		0A3CE11C2D87A288005B2E5A /* FormDemoTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FormDemoTests;
-			sourceTree = "<group>";
-		};
-		0A3CE1262D87A288005B2E5A /* FormDemoUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FormDemoUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,8 +79,6 @@
 			isa = PBXGroup;
 			children = (
 				0A3CE1052D87A287005B2E5A /* FormDemo */,
-				0A3CE11C2D87A288005B2E5A /* FormDemoTests */,
-				0A3CE1262D87A288005B2E5A /* FormDemoUITests */,
 				0A3CE1042D87A287005B2E5A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -143,9 +131,6 @@
 			dependencies = (
 				0A3CE11B2D87A288005B2E5A /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				0A3CE11C2D87A288005B2E5A /* FormDemoTests */,
-			);
 			name = FormDemoTests;
 			packageProductDependencies = (
 			);
@@ -165,9 +150,6 @@
 			);
 			dependencies = (
 				0A3CE1252D87A288005B2E5A /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				0A3CE1262D87A288005B2E5A /* FormDemoUITests */,
 			);
 			name = FormDemoUITests;
 			packageProductDependencies = (
