@@ -8,7 +8,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -50,8 +50,14 @@ class ViewController: UIViewController {
         ])
     }
     private func openLink() {
-        if let url = URL(string: "https://www.apple.com"), UIApplication.shared.canOpenURL(url){
-            UIApplication.shared.open(url)
+        if let url = URL(string: "https://www.apple.com"), UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url) { success in
+                if success {
+                    print("웹사이트 열기 성공")
+                } else {
+                    print("웹사이트 열기 실패")
+                }
+            }
         }
     }
 
