@@ -8,22 +8,29 @@
 import UIKit
 
 class FirstViewController: UIViewController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "First"
-        // Do any additional setup after loading the view.
+        
+        setupButton()
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    func setupButton() {
+        let button = UIButton(type: .system)
+        button.setTitle("데이터 전달", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 20)
+        button.sizeToFit()
+        button.center = view.center
+        button.addAction(UIAction { [weak self] _ in
+            self?.didTapButton()
+        }, for: .touchUpInside)
+        view.addSubview(button)
     }
-    */
-
+    
+    func didTapButton() {
+        let data = "전달할 데이터입니다."
+        DataManager.shared.updateData(data)
+    }
+    
 }
