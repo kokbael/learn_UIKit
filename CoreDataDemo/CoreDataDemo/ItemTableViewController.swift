@@ -23,6 +23,7 @@ class ItemTableViewController: UITableViewController {
         super.viewDidLoad()
         configureNavigation()
         configureTableView()
+        configureSearchController()
         
         // 샘플 데이터 추가 버튼
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -138,30 +139,75 @@ class ItemTableViewController: UITableViewController {
     
     // MARK: - 테이블뷰 델리게이트 메서드
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-      tableView.deselectRow(at: indexPath, animated: true)
-
-      let item = items[indexPath.row]
-
-      // 확인 알림 표시
-      let alert = UIAlertController(
-        title: "아이템 삭제",
-        message: "\(item.title)을(를) 삭제하시겠습니까?",
-        preferredStyle: .alert
-      )
-
-      alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-      alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
-        self?.deleteGridItem(item)
-      })
-
-      present(alert, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let item = items[indexPath.row]
+        
+        // 확인 알림 표시
+        let alert = UIAlertController(
+            title: "아이템 삭제",
+            message: "\(item.title)을(를) 삭제하시겠습니까?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+            self?.deleteGridItem(item)
+        })
+        
+        present(alert, animated: true)
     }
-
+    
     // 스와이프 삭제 기능 구현
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-      if editingStyle == .delete {
-        let item = items[indexPath.row]
-        deleteGridItem(item)
-      }
+        if editingStyle == .delete {
+            let item = items[indexPath.row]
+            deleteGridItem(item)
+        }
+    }
+}
+
+// 검색 기능 구현
+extension ItemTableViewController: UISearchResultsUpdating {
+    
+    // 검색 컨트롤러 설정
+    func configureSearchController() {
+        let searchController = UISearchController()
+        searchController.searchResultsUpdater = self
+        searchController.searchBar.placeholder = "검색"
+        navigationItem.searchController = searchController
+        
+        // 네비게이션 바에 검색바가 숨겨지지 않도록 설정
+        navigationItem.hidesSearchBarWhenScrolling = false
+        
+        // 검색 결과 화면을 현재 뷰 컨트롤러로 설정
+        definesPresentationContext = true
+    }
+    
+    // 검색 기능 구현
+    func searchGridItems(_ text: String) {
+        
+        // 검색어가 없을 때 전체 데이터 로드
+        if text.isEmpty {
+            loadGridItems()
+            return
+        }
+        
+        let request: NSFetchRequest<GridItemEntity> = GridItemEntity.fetchRequest()
+        
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", text)
+        
+        do {
+            let result = try viewContext.fetch(request)
+            items = result.compactMap { GridItem.from($0) }
+            tableView.reloadData()
+        } catch {
+            print("검색 실패: \(error)")
+        }
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let text = searchController.searchBar.text else { return }
+        searchGridItems(text)
     }
 }
