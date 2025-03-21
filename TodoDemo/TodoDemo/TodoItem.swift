@@ -48,8 +48,7 @@ extension TodoItem {
     // TodoItemEntity -> TodoItem 변환
     static func from(_ entity: TodoItemEntity) -> TodoItem? {
         guard let id = entity.id,
-              let title = entity.title,
-              let createdAt = entity.createdAt else {
+              let title = entity.title else {
             return nil
         }
         let isComplete = entity.isComplete
