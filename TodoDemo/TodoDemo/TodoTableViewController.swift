@@ -19,7 +19,15 @@ class TodoTableViewController: UITableViewController {
         return persistentContainer.viewContext  // 일꾼
     }
     
-    private var showNotComplete: Bool = false
+    private var showNotComplete: Bool = false {
+        didSet {
+            navigationItem.leftBarButtonItem?.title = leftBarButtonTitle
+        }
+    }
+    
+    private var leftBarButtonTitle: String {
+        return showNotComplete ? "미완료만 보는 중" : "모두 보는 중"
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,31 +43,19 @@ class TodoTableViewController: UITableViewController {
             action: #selector(addNewItem)
         )
         
-        updateLeftBarButtonItem()
-        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: self.leftBarButtonTitle,
+            primaryAction: UIAction { [weak self] _ in
+                self?.showNotComplete.toggle()
+                self?.navigationItem.leftBarButtonItem?.title = self?.leftBarButtonTitle
+                self?.loadTodoItems()
+            }
+        )
+
         // 데이터 로드
         loadTodoItems()
     }
-    
 
-    func updateLeftBarButtonItem() {
-        var leftBarButtonTitle: String {
-            return showNotComplete ? "미완료만 보는 중" : "모두 보는 중"
-        }
-        let action = UIAction { [weak self] action in
-            guard let self = self else { return }
-            self.showNotComplete.toggle()
-            self.navigationItem.leftBarButtonItem?.title = leftBarButtonTitle
-            
-            loadTodoItems()
-            
-        }
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: leftBarButtonTitle,
-            primaryAction: action
-        )
-    }
-    
     func configureNavigation() {
         title = "Todo List"
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -250,12 +246,13 @@ class TodoTableViewController: UITableViewController {
 }
 
 // 검색 기능 구현
-extension TodoTableViewController: UISearchResultsUpdating {
+extension TodoTableViewController: UISearchResultsUpdating, UISearchBarDelegate {
     
     // 검색 컨트롤러 설정
     func configureSearchController() {
         let searchController = UISearchController()
         searchController.searchResultsUpdater = self
+        searchController.searchBar.delegate = self
         searchController.searchBar.placeholder = "검색"
         navigationItem.searchController = searchController
         
@@ -268,11 +265,18 @@ extension TodoTableViewController: UISearchResultsUpdating {
     
     // 검색 기능 구현
     func searchGridItems(_ text: String) {
-        
         // 검색어가 없을 때 전체 데이터 로드
         if text.isEmpty {
-            loadTodoItems()
-            return
+            let request: NSFetchRequest<TodoItemEntity> = TodoItemEntity.fetchRequest()
+            do {
+                let result = try viewContext.fetch(request)
+                items = result.compactMap { TodoItem.from($0) }
+                // 테이블 뷰 리로드
+                tableView.reloadData()
+                return
+            } catch {
+                print("데이터 로드 실패: \(error)")
+            }
         }
         
         let request: NSFetchRequest<TodoItemEntity> = TodoItemEntity.fetchRequest()
@@ -291,5 +295,14 @@ extension TodoTableViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let text = searchController.searchBar.text else { return }
         searchGridItems(text)
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        // 검색어 초기화 및 검색 컨트롤러 비활성화
+        searchBar.text = ""
+        searchBar.resignFirstResponder()
+        navigationItem.searchController?.isActive = false
+        
+        showNotComplete = false
     }
 }
