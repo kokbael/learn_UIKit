@@ -21,6 +21,7 @@ class TodoTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.register(TodoTableViewCell.self, forCellReuseIdentifier: "TodoCell")
         configureNavigation()
         configureTableView()
         configureSearchController()
@@ -86,7 +87,7 @@ class TodoTableViewController: UITableViewController {
     
     private func loadTodoItems() {
         let request: NSFetchRequest<TodoItemEntity> = TodoItemEntity.fetchRequest()
-        
+        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: true)]
         do {
             let result = try viewContext.fetch(request)
             items = result.compactMap { TodoItem.from($0) }
@@ -97,7 +98,7 @@ class TodoTableViewController: UITableViewController {
         }
     }
     
-    private func updateTodoItem(id: UUID, newTitle: String) {
+    private func updateTodoTitle(id: UUID, newTitle: String) {
         let request: NSFetchRequest<TodoItemEntity> = TodoItemEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id = %@", id as CVarArg)
         
@@ -107,6 +108,25 @@ class TodoTableViewController: UITableViewController {
             
             object.title = newTitle
                         
+            try viewContext.save()
+            
+            // 수정 후 UI 업데이트
+            loadTodoItems()
+        } catch {
+            print("수정 실패: \(error)")
+        }
+        
+    }
+    
+    private func updateIsComplete(id: UUID, isComplete: Bool) {
+        let request: NSFetchRequest<TodoItemEntity> = TodoItemEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "id = %@", id as CVarArg)
+        
+        do {
+            let result = try viewContext.fetch(request)
+            guard let object = result.first else { return }
+            
+            object.isComplete = isComplete
             try viewContext.save()
             
             // 수정 후 UI 업데이트
@@ -150,14 +170,15 @@ class TodoTableViewController: UITableViewController {
     
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoCell", for: indexPath) as! TodoTableViewCell
         
         let item = items[indexPath.row]
-        
-        var content = cell.defaultContentConfiguration()
-        content.text = item.title
-        
-        cell.contentConfiguration = content
+                
+        cell.configure(item: item)
+
+        cell.toggleCompletion = { [weak self] in
+            self?.updateIsComplete(id: item.id, isComplete: !item.isComplete)
+        }
         
         return cell
     }
@@ -183,7 +204,7 @@ class TodoTableViewController: UITableViewController {
         alert.addAction(UIAlertAction(title: "취소", style: .cancel))
         alert.addAction(UIAlertAction(title: "수정", style: .default) { [weak self] _ in
             if let text = alert.textFields?.first?.text, !text.isEmpty {
-                self?.updateTodoItem(id: item.id, newTitle: text)
+                self?.updateTodoTitle(id: item.id, newTitle: text)
             }
         })
         
