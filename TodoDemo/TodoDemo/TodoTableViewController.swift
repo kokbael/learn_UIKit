@@ -19,6 +19,8 @@ class TodoTableViewController: UITableViewController {
         return persistentContainer.viewContext  // 일꾼
     }
     
+    private var showNotComplete: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(TodoTableViewCell.self, forCellReuseIdentifier: "TodoCell")
@@ -33,10 +35,30 @@ class TodoTableViewController: UITableViewController {
             action: #selector(addNewItem)
         )
         
+        updateLeftBarButtonItem()
+        
         // 데이터 로드
         loadTodoItems()
     }
     
+
+    func updateLeftBarButtonItem() {
+        var leftBarButtonTitle: String {
+            return showNotComplete ? "미완료만 보는 중" : "모두 보는 중"
+        }
+        let action = UIAction { [weak self] action in
+            guard let self = self else { return }
+            self.showNotComplete.toggle()
+            self.navigationItem.leftBarButtonItem?.title = leftBarButtonTitle
+            
+            loadTodoItems()
+            
+        }
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: leftBarButtonTitle,
+            primaryAction: action
+        )
+    }
     
     func configureNavigation() {
         title = "Todo List"
@@ -87,7 +109,14 @@ class TodoTableViewController: UITableViewController {
     
     private func loadTodoItems() {
         let request: NSFetchRequest<TodoItemEntity> = TodoItemEntity.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: true)]
+        if showNotComplete {
+            // 완료된 항목 제외: isComplete가 false인 항목만 불러오기
+            request.predicate = NSPredicate(format: "isComplete == %@", NSNumber(booleanLiteral: false))
+        } else {
+            // 모든 항목 불러오기
+            request.predicate = nil
+        }
+        
         do {
             let result = try viewContext.fetch(request)
             items = result.compactMap { TodoItem.from($0) }
