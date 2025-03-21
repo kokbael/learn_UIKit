@@ -19,14 +19,14 @@ class TodoTableViewController: UITableViewController {
         return persistentContainer.viewContext  // 일꾼
     }
     
-    private var showNotComplete: Bool = false {
+    private var completeFilterToggle: Bool = false {
         didSet {
             navigationItem.leftBarButtonItem?.title = leftBarButtonTitle
         }
     }
     
     private var leftBarButtonTitle: String {
-        return showNotComplete ? "미완료만 보는 중" : "모두 보는 중"
+        return completeFilterToggle ? "미완료만 보는 중" : "모두 보는 중"
     }
     
     override func viewDidLoad() {
@@ -46,7 +46,7 @@ class TodoTableViewController: UITableViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             title: self.leftBarButtonTitle,
             primaryAction: UIAction { [weak self] _ in
-                self?.showNotComplete.toggle()
+                self?.completeFilterToggle.toggle()
                 self?.navigationItem.leftBarButtonItem?.title = self?.leftBarButtonTitle
                 self?.loadTodoItems()
             }
@@ -105,7 +105,7 @@ class TodoTableViewController: UITableViewController {
     
     private func loadTodoItems() {
         let request: NSFetchRequest<TodoItemEntity> = TodoItemEntity.fetchRequest()
-        if showNotComplete {
+        if completeFilterToggle {
             // 완료된 항목 제외: isComplete가 false인 항목만 불러오기
             request.predicate = NSPredicate(format: "isComplete == %@", NSNumber(booleanLiteral: false))
         } else {
@@ -303,6 +303,6 @@ extension TodoTableViewController: UISearchResultsUpdating, UISearchBarDelegate 
         searchBar.resignFirstResponder()
         navigationItem.searchController?.isActive = false
         
-        showNotComplete = false
+        completeFilterToggle = false
     }
 }
